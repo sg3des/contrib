@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -228,11 +228,11 @@ func TestNew(t *testing.T) {
 			BasePath: "/api/v1",
 		}))
 
-		app.Get("/api/v1/tasks", func(c *fiber.Ctx) error {
+		app.Get("/api/v1/tasks", func(c fiber.Ctx) error {
 			return c.SendString("success")
 		})
 
-		app.Get("/api/v1", func(c *fiber.Ctx) error {
+		app.Get("/api/v1", func(c fiber.Ctx) error {
 			return c.SendString("success")
 		})
 
@@ -462,11 +462,11 @@ func TestNewWithFileContent(t *testing.T) {
 			FilePath:    "doesnotexist-swagger.json",
 		}))
 
-		app.Get("/api/v1/tasks", func(c *fiber.Ctx) error {
+		app.Get("/api/v1/tasks", func(c fiber.Ctx) error {
 			return c.SendString("success")
 		})
 
-		app.Get("/api/v1", func(c *fiber.Ctx) error {
+		app.Get("/api/v1", func(c fiber.Ctx) error {
 			return c.SendString("success")
 		})
 

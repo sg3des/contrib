@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/fasthttp/websocket"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -283,9 +283,9 @@ func setupTestApp(cfg Config, h func(c *Conn)) *fiber.App {
 		handler = New(h, cfg)
 	}
 
-	app := fiber.New(fiber.Config{DisableStartupMessage: true})
+	app := fiber.New(fiber.Config{})
 
-	app.Use("/ws", func(c *fiber.Ctx) error {
+	app.Use("/ws", func(c fiber.Ctx) error {
 		if IsWebSocketUpgrade(c) {
 			c.Locals("allowed", true)
 			c.Locals("local1", "value1")

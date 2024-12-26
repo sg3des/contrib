@@ -1,4 +1,4 @@
-module github.com/gofiber/contrib/websocket
+module github.com/sg3des/contrib/websocket
 
 go 1.22
 

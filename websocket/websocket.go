@@ -287,20 +287,6 @@ func (conn *Conn) WritePreparedMessage(pm *websocket.PreparedMessage) error {
 	return conn.Conn.WritePreparedMessage(pm)
 }
 
-func (conn *Conn) ReadMessage() (msgtype int, data []byte, err error) {
-	conn.Lock()
-	defer conn.Unlock()
-
-	return conn.Conn.ReadMessage()
-}
-
-func (conn *Conn) ReadJSON(v any) error {
-	conn.Lock()
-	defer conn.Unlock()
-
-	return conn.Conn.ReadJSON(v)
-}
-
 // Constants are taken from https://github.com/fasthttp/websocket/blob/master/conn.go#L43
 
 // Close codes defined in RFC 6455, section 11.7.

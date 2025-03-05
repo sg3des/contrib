@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"runtime/debug"
 	"sync"
@@ -271,6 +272,10 @@ func (conn *Conn) WriteMessage(msgtype int, data []byte) error {
 	defer conn.Unlock()
 
 	return conn.conn.WriteMessage(msgtype, data)
+}
+
+func (conn *Conn) RemoteAddr() net.Addr {
+	return conn.conn.RemoteAddr()
 }
 
 // Constants are taken from https://github.com/fasthttp/websocket/blob/master/conn.go#L43

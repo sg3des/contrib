@@ -151,7 +151,7 @@ func New(handler func(*Conn), config ...Config) fiber.Handler {
 		conn.ip = c.IP()
 
 		if err := upgrader.Upgrade(ctx, func(fconn *websocket.Conn) {
-			conn.Conn = fconn
+			conn.conn = fconn
 			defer releaseConn(conn)
 			defer cfg.RecoverHandler(conn)
 			handler(conn)
@@ -165,13 +165,15 @@ func New(handler func(*Conn), config ...Config) fiber.Handler {
 
 // Conn https://godoc.org/github.com/gorilla/websocket#pkg-index
 type Conn struct {
-	*websocket.Conn
+	conn    *websocket.Conn
 	locals  map[string]interface{}
 	params  map[string]string
 	cookies map[string]string
 	headers map[string]string
 	queries map[string]string
 	ip      string
+
+	sync.Mutex
 }
 
 // Conn pool
@@ -194,7 +196,7 @@ func acquireConn() *Conn {
 
 // Return Conn to pool
 func releaseConn(conn *Conn) {
-	conn.Conn = nil
+	conn.conn = nil
 	poolConn.Put(conn)
 }
 
@@ -255,6 +257,20 @@ func (conn *Conn) Headers(key string, defaultValue ...string) string {
 // IP returns the client's network address
 func (conn *Conn) IP() string {
 	return conn.ip
+}
+
+func (conn *Conn) WriteJSON(v any) error {
+	conn.Lock()
+	defer conn.Unlock()
+
+	return conn.conn.WriteJSON(v)
+}
+
+func (conn *Conn) WriteMessage(msgtype int, data []byte) error {
+	conn.Lock()
+	defer conn.Unlock()
+
+	return conn.conn.WriteMessage(msgtype, data)
 }
 
 // Constants are taken from https://github.com/fasthttp/websocket/blob/master/conn.go#L43

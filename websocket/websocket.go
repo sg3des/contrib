@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"runtime/debug"
 	"sync"
@@ -152,7 +151,7 @@ func New(handler func(*Conn), config ...Config) fiber.Handler {
 		conn.ip = c.IP()
 
 		if err := upgrader.Upgrade(ctx, func(fconn *websocket.Conn) {
-			conn.conn = fconn
+			conn.Conn = fconn
 			defer releaseConn(conn)
 			defer cfg.RecoverHandler(conn)
 			handler(conn)
@@ -166,7 +165,7 @@ func New(handler func(*Conn), config ...Config) fiber.Handler {
 
 // Conn https://godoc.org/github.com/gorilla/websocket#pkg-index
 type Conn struct {
-	conn    *websocket.Conn
+	*websocket.Conn
 	locals  map[string]interface{}
 	params  map[string]string
 	cookies map[string]string
@@ -197,7 +196,7 @@ func acquireConn() *Conn {
 
 // Return Conn to pool
 func releaseConn(conn *Conn) {
-	conn.conn = nil
+	conn.Conn = nil
 	poolConn.Put(conn)
 }
 
@@ -264,18 +263,42 @@ func (conn *Conn) WriteJSON(v any) error {
 	conn.Lock()
 	defer conn.Unlock()
 
-	return conn.conn.WriteJSON(v)
+	return conn.Conn.WriteJSON(v)
 }
 
 func (conn *Conn) WriteMessage(msgtype int, data []byte) error {
 	conn.Lock()
 	defer conn.Unlock()
 
-	return conn.conn.WriteMessage(msgtype, data)
+	return conn.Conn.WriteMessage(msgtype, data)
 }
 
-func (conn *Conn) RemoteAddr() net.Addr {
-	return conn.conn.RemoteAddr()
+func (conn *Conn) WriteControl(msgtype int, data []byte, deadLine time.Time) error {
+	conn.Lock()
+	defer conn.Unlock()
+
+	return conn.Conn.WriteControl(msgtype, data, deadLine)
+}
+
+func (conn *Conn) WritePreparedMessage(pm *websocket.PreparedMessage) error {
+	conn.Lock()
+	defer conn.Unlock()
+
+	return conn.Conn.WritePreparedMessage(pm)
+}
+
+func (conn *Conn) ReadMessage() (msgtype int, data []byte, err error) {
+	conn.Lock()
+	defer conn.Unlock()
+
+	return conn.Conn.ReadMessage()
+}
+
+func (conn *Conn) ReadJSON(v any) error {
+	conn.Lock()
+	defer conn.Unlock()
+
+	return conn.Conn.ReadJSON(v)
 }
 
 // Constants are taken from https://github.com/fasthttp/websocket/blob/master/conn.go#L43

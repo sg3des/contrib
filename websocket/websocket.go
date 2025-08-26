@@ -121,6 +121,8 @@ func New(handler func(*Conn), config ...Config) fiber.Handler {
 		ctx := c.RequestCtx()
 
 		conn := acquireConn()
+		conn.ctx = c
+
 		// locals
 		ctx.VisitUserValues(func(key []byte, value interface{}) {
 			conn.locals[string(key)] = value
@@ -173,6 +175,8 @@ type Conn struct {
 	queries map[string]string
 	ip      string
 
+	ctx fiber.Ctx
+
 	sync.Mutex
 }
 
@@ -198,6 +202,10 @@ func acquireConn() *Conn {
 func releaseConn(conn *Conn) {
 	conn.Conn = nil
 	poolConn.Put(conn)
+}
+
+func (conn *Conn) Context() fiber.Ctx {
+	return conn.ctx
 }
 
 // Locals makes it possible to pass interface{} values under string keys scoped to the request
@@ -230,6 +238,10 @@ func (conn *Conn) Query(key string, defaultValue ...string) string {
 		return defaultValue[0]
 	}
 	return v
+}
+
+func (conn *Conn) Queries() map[string]string {
+	return conn.queries
 }
 
 // Cookies is used for getting a cookie value by key
